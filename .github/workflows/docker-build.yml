@@ -14,9 +14,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout the repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # 2️⃣ Set up Google Cloud SDK and authenticate
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
@@ -24,10 +26,16 @@ jobs:
           service_account_key: ${{ secrets.GCP_SA_KEY }}  # JSON key of SA with Artifact Registry Writer
           export_default_credentials: true
 
+      # 3️⃣ Configure Docker to use GCP Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
+      # 4️⃣ Optional: verify Dockerfile is visible
+      - name: List files
+        run: ls -la
+
+      # 5️⃣ Build Docker image
       - name: Build Docker Image
         run: |
           IMAGE_NAME=hello-world-app
@@ -36,8 +44,9 @@ jobs:
           REPO=argocd-poc-docker
           TAG=v${GITHUB_RUN_NUMBER}  # unique tag for this workflow run
           
-          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG ./app
+          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG .
 
+      # 6️⃣ Push Docker image to Artifact Registry
       - name: Push Docker Image
         run: |
           REGION=asia-southeast1
