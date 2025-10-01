@@ -1,0 +1,49 @@
+name: Build and Push Docker Image to GAR
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "Dockerfile"
+      - ".github/workflows/**"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}        
+          service_account_key: ${{ secrets.GCP_SA_KEY }}  # JSON key of SA with Artifact Registry Writer
+          export_default_credentials: true
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
+
+      - name: Build Docker Image
+        run: |
+          IMAGE_NAME=hello-world-app
+          REGION=asia-southeast1
+          PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+          REPO=argocd-poc-docker
+          TAG=v${GITHUB_RUN_NUMBER}  # unique tag for this workflow run
+          
+          docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG ./app
+
+      - name: Push Docker Image
+        run: |
+          REGION=asia-southeast1
+          PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
+          REPO=argocd-poc-docker
+          IMAGE_NAME=hello-world-app
+          TAG=v${GITHUB_RUN_NUMBER}
+          
+          docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG

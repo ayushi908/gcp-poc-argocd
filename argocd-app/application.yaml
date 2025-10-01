@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: hello-world-app
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: hello=asia-southeast1-docker.pkg.dev/celtic-client-473709-f9/argocd-poc-docker/hello-world-app
+    argocd-image-updater.argoproj.io/hello.update-strategy: semver
+    argocd-image-updater.argoproj.io/hello.allow-tags: regexp:^v[0-9]+$
+    argocd-image-updater.argoproj.io/write-back-method: git:secret:argocd/git-creds
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/ayushi908/gcp-poc-argocd.git
+    targetRevision: main
+    path: k8s
+    kustomize: {}
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

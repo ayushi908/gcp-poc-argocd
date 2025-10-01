@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello-world-app
+  labels:
+    app: hello-world-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hello-world-app
+  template:
+    metadata:
+      labels:
+        app: hello-world-app
+    spec:
+      containers:
+        - name: hello-world-app
+          image: asia-southeast1-docker.pkg.dev/celtic-client-473709-f9/argocd-poc-docker/hello-world-app
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 3000
