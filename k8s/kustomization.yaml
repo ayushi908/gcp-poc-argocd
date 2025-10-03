@@ -7,4 +7,4 @@ resources:
 
 images:
   - name: asia-southeast1-docker.pkg.dev/celtic-client-473709-f9/argocd-poc-docker/hello-world-app
-    newTag: v1
+    newTag: v4
