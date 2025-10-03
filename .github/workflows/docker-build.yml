@@ -14,33 +14,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout the repository
+      #  Checkout the repository
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Authenticate to Google Cloud
+      #  Authenticate to Google Cloud
       - name: Authenticate to GCP
         uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      # 3️⃣ Set up Google Cloud SDK
+      #  Set up Google Cloud SDK
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_default_credentials: true
 
-      # 4️⃣ Configure Docker to use Artifact Registry
+      #  Configure Docker to use Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
-      # 5️⃣ Debug: verify repo root has Dockerfile
+      #  Debug: verify repo root has Dockerfile
       - name: List files
         run: ls -la
 
-      # 6️⃣ Build Docker image
+      #  Build Docker image
       - name: Build Docker Image
         run: |
           IMAGE_NAME=hello-world-app
@@ -51,7 +51,7 @@ jobs:
 
           docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG .
 
-      # 7️⃣ Push Docker image
+      #  Push Docker image
       - name: Push Docker Image
         run: |
           IMAGE_NAME=hello-world-app
