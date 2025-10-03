@@ -18,41 +18,46 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      # 2️⃣ Set up Google Cloud SDK and authenticate
-      - name: Set up Google Cloud SDK
+      # 2️⃣ Authenticate to Google Cloud
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      # 3️⃣ Set up Google Cloud SDK
+      - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}        
-          service_account_key: ${{ secrets.GCP_SA_KEY }}  # JSON key of SA with Artifact Registry Writer
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
           export_default_credentials: true
 
-      # 3️⃣ Configure Docker to use GCP Artifact Registry
+      # 4️⃣ Configure Docker to use Artifact Registry
       - name: Configure Docker for Artifact Registry
         run: |
           gcloud auth configure-docker asia-southeast1-docker.pkg.dev --quiet
 
-      # 4️⃣ Optional: verify Dockerfile is visible
+      # 5️⃣ Debug: verify repo root has Dockerfile
       - name: List files
         run: ls -la
 
-      # 5️⃣ Build Docker image
+      # 6️⃣ Build Docker image
       - name: Build Docker Image
         run: |
           IMAGE_NAME=hello-world-app
           REGION=asia-southeast1
           PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
           REPO=argocd-poc-docker
-          TAG=v${GITHUB_RUN_NUMBER}  # unique tag for this workflow run
-          
+          TAG=v${GITHUB_RUN_NUMBER}
+
           docker build -t $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG .
 
-      # 6️⃣ Push Docker image to Artifact Registry
+      # 7️⃣ Push Docker image
       - name: Push Docker Image
         run: |
+          IMAGE_NAME=hello-world-app
           REGION=asia-southeast1
           PROJECT_ID=${{ secrets.GCP_PROJECT_ID }}
           REPO=argocd-poc-docker
-          IMAGE_NAME=hello-world-app
           TAG=v${GITHUB_RUN_NUMBER}
-          
+
           docker push $REGION-docker.pkg.dev/$PROJECT_ID/$REPO/$IMAGE_NAME:$TAG
